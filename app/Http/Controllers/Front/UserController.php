@@ -33,18 +33,20 @@ class UserController extends Controller
             $fields['photo'] = asset("storage/$folder/$filename");
         }
 
+        $user = User::create($fields);
+
+
         $responce = Http::withHeaders([
             'Authorization' => 'Basic TP7G8sTs2864Rnbb7H50fpJwYQsR5j3G',
             'Content-Type' => 'application/json'
         ])->post('api.tinify.com', [
             'source' => [
-                'url' => $fields['photo']
+                'url' => $user->photo
             ],
         ]);
 
         dd($responce);
 
-        User::create($fields);
 
         return to_route('users.index');
     }
