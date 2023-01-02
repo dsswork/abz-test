@@ -39,7 +39,7 @@ class UserController extends Controller
         $responce = Http::withHeaders([
             'Authorization' => 'Basic TP7G8sTs2864Rnbb7H50fpJwYQsR5j3G',
             'Content-Type' => 'application/json'
-        ])->post('api.tinify.com', [
+        ])->post('api.tinify.com/shrink', [
             'source' => [
                 'url' => $user->photo
             ],
