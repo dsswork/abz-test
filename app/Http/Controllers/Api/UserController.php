@@ -143,34 +143,9 @@ class UserController extends Controller
      *     )
      * )
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request, User $user)
     {
-
-        $fields = $request->validated();
-        if ($request->file('photo')) {
-            $image = $request->file('photo');
-            $filename = rand(111111, 999999) . $image->getClientOriginalExtension();
-            $folder = "images";
-            Storage::disk('public')->putFileAs($folder, $image, $filename);
-            $fields['photo'] = asset("storage/$folder/$filename");
-        }
-
-        $user = User::create($fields);
-
-        $responce = Http::withHeaders([
-            'Authorization' => 'Basic TP7G8sTs2864Rnbb7H50fpJwYQsR5j3G',
-            'Content-Type' => 'application/json'
-        ])->post('api.tinify.com', [
-            'source' => [
-                'url' => $fields['photo']
-            ],
-        ]);
-
-        dd($responce);
-
-
-
-//        User::where('is_admin', 1)->first()->tokens()->delete();
+        $user = $user->createNew($request);
 
         return response()->json([
             'success' => true,
