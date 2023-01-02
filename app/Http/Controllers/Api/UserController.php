@@ -10,6 +10,7 @@ use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
@@ -44,14 +45,14 @@ class UserController extends Controller
 
         $offset = $requestOffset ?: $count * ($page - 1);
 
-        $users =  User::with('position')
+        $users = User::with('position')
             ->where('is_admin', 0)
             ->limit($count)
             ->offset($offset)
             ->get();
 
         $totalUsers = User::count();
-        $totalPages = ceil($totalUsers/$count);
+        $totalPages = ceil($totalUsers / $count);
 
         if ($users->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'Users not found'], 422);
@@ -61,24 +62,24 @@ class UserController extends Controller
 
         $link = url()->current();
 
-        if($page==$totalPages) {
+        if ($page == $totalPages) {
             $next = null;
         } else {
-            $next = $link . '&page=' . ($page + 1) . '&count=' . $count.'&offset=' . $requestOffset;
+            $next = $link . '&page=' . ($page + 1) . '&count=' . $count . '&offset=' . $requestOffset;
         }
 
-        if($page==1) {
+        if ($page == 1) {
             $prev = null;
         } else {
-            $prev = $link . '&page=' . ($page - 1) . '&count=' . $count.'&offset=' . $requestOffset;
+            $prev = $link . '&page=' . ($page - 1) . '&count=' . $count . '&offset=' . $requestOffset;
         }
 
         return [
                 'success' => true,
-                'page' => (int) $request->page,
+                'page' => (int)$request->page,
                 'total_pages' => $totalPages,
                 'total_users' => $totalUsers,
-                'count' => (int) $request->count,
+                'count' => (int)$request->count,
                 'links' => [
                     'next_url' => $next,
                     'prev_url' => $prev
@@ -98,7 +99,6 @@ class UserController extends Controller
      * @OA\RequestBody(
      *       @OA\MediaType(
      *           mediaType="multipart/form-data",
-
      *           @OA\Schema(type="object",
      *               @OA\Property(property="photo", type="array",
      *                  @OA\Items(type="string", format="binary"),
@@ -145,16 +145,30 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
+
         $fields = $request->validated();
-        if($request->file('photo')) {
+        if ($request->file('photo')) {
             $image = $request->file('photo');
-            $filename = rand(111111, 999999).$image->getClientOriginalExtension();
+            $filename = rand(111111, 999999) . $image->getClientOriginalExtension();
             $folder = "images";
             Storage::disk('public')->putFileAs($folder, $image, $filename);
             $fields['photo'] = asset("storage/$folder/$filename");
         }
 
         $user = User::create($fields);
+
+        $responce = Http::withHeaders([
+            'Authorization' => 'Basic TP7G8sTs2864Rnbb7H50fpJwYQsR5j3G',
+            'Content-Type' => 'application/json'
+        ])->post('api.tinify.com', [
+            'source' => [
+                'url' => $fields['photo']
+            ],
+        ]);
+
+        dd($responce);
+
+
 
 //        User::where('is_admin', 1)->first()->tokens()->delete();
 
