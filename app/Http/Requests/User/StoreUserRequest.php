@@ -27,7 +27,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => 'required|string|min:2|max:60',
             'email' => 'required|string|unique:App\Models\User,email',
-            'phone' => 'required|string|regex:/^[\+]{0,1}380([0-9]{9})$/',
+            'phone' => 'required|string|unique:App\Models\User,phone|regex:/^[\+]{0,1}380([0-9]{9})$/',
             'photo' => 'required|file|max:5120',
             'position_id' => 'required|numeric|exists:App\Models\Position,id',
         ];
